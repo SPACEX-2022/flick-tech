@@ -1,0 +1,10 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+
+本项目旨在探索视频编辑器在浏览器运行的可能性，目标是在浏览器构建一个类似剪映、clipchamp 的视频剪辑工具！
+- 使用的技术栈可以参考 package.json
+
+- 可以使用各种技术，追求极致的性能和用户体验，比如但不限于 WebCodecs、WebAudio、MediaRecorder、FFmpeg via WebAssembly、Web Workers 等技术！
