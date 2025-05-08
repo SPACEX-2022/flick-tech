@@ -2,13 +2,14 @@
 
 import { useState } from 'react';
 import { Button, Tabs, Tab, Box, Typography, IconButton, Grid, Card, CardMedia, CardContent, CardActions } from '@mui/material';
-import { PlusCircle, Trash2, Film, Image, Music, Type } from 'lucide-react';
+import { PlusCircle, Trash2, Film, Image, Music, Type, ArrowDownToLine } from 'lucide-react';
 import { useEditor } from '../context/EditorContext';
 import { Asset, AssetType } from '../types/editor';
 
 const AssetLibrary = () => {
-  const { editorState, addAsset, removeAsset, selectAsset } = useEditor();
+  const { editorState, addAsset, removeAsset, selectAsset, addClip } = useEditor();
   const [tabValue, setTabValue] = useState(0);
+  const [hoveredAssetId, setHoveredAssetId] = useState<string | null>(null);
   
   // 根据不同类型筛选素材
   const videoAssets = editorState.project.assets.filter(asset => asset.type === 'video');
@@ -118,6 +119,31 @@ const AssetLibrary = () => {
     removeAsset(assetId);
   };
 
+  // 添加到轨道
+  const handleAddToTrack = (e: React.MouseEvent, asset: Asset) => {
+    e.stopPropagation();
+    
+    // 找到符合类型的第一个轨道
+    const trackType = asset.type === 'audio' ? 'audio' : 'video';
+    const track = editorState.project.tracks.find(t => t.type === trackType);
+    
+    if (!track) return;
+    
+    // 计算新片段的位置
+    const currentTime = editorState.currentTime;
+    const clipDuration = asset.duration || 5000; // 默认5秒
+    
+    // 添加剪辑到轨道
+    addClip({
+      assetId: asset.id,
+      trackId: track.id,
+      startTime: currentTime,
+      endTime: currentTime + clipDuration,
+      inPoint: 0,
+      outPoint: clipDuration,
+    });
+  };
+
   return (
     <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
@@ -151,14 +177,41 @@ const AssetLibrary = () => {
 
         <Grid container spacing={2}>
           {videoAssets.map((asset) => (
-            <Grid item xs={6} key={asset.id}>
+            <Grid key={asset.id} size={6}>
               <Card 
                 sx={{ 
                   cursor: 'pointer',
                   border: editorState.selectedAssetIds.includes(asset.id) ? '2px solid #1976d2' : 'none',
+                  position: 'relative',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
+                  },
                 }}
                 onClick={() => handleAssetSelect(asset.id)}
+                onMouseEnter={() => setHoveredAssetId(asset.id)}
+                onMouseLeave={() => setHoveredAssetId(null)}
               >
+                {hoveredAssetId === asset.id && (
+                  <IconButton
+                    sx={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                      color: 'white',
+                      '&:hover': {
+                        backgroundColor: 'rgba(25, 118, 210, 0.8)',
+                      },
+                      zIndex: 10,
+                    }}
+                    onClick={(e) => handleAddToTrack(e, asset)}
+                  >
+                    <ArrowDownToLine size={24} />
+                  </IconButton>
+                )}
                 <CardMedia
                   component="img"
                   height="100"
@@ -209,14 +262,41 @@ const AssetLibrary = () => {
 
         <Grid container spacing={2}>
           {imageAssets.map((asset) => (
-            <Grid item xs={6} key={asset.id}>
+            <Grid key={asset.id} size={6}>
               <Card 
                 sx={{ 
                   cursor: 'pointer',
                   border: editorState.selectedAssetIds.includes(asset.id) ? '2px solid #1976d2' : 'none',
+                  position: 'relative',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
+                  },
                 }}
                 onClick={() => handleAssetSelect(asset.id)}
+                onMouseEnter={() => setHoveredAssetId(asset.id)}
+                onMouseLeave={() => setHoveredAssetId(null)}
               >
+                {hoveredAssetId === asset.id && (
+                  <IconButton
+                    sx={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                      color: 'white',
+                      '&:hover': {
+                        backgroundColor: 'rgba(25, 118, 210, 0.8)',
+                      },
+                      zIndex: 10,
+                    }}
+                    onClick={(e) => handleAddToTrack(e, asset)}
+                  >
+                    <ArrowDownToLine size={24} />
+                  </IconButton>
+                )}
                 <CardMedia
                   component="img"
                   height="100"
@@ -262,14 +342,41 @@ const AssetLibrary = () => {
 
         <Grid container spacing={2}>
           {audioAssets.map((asset) => (
-            <Grid item xs={12} key={asset.id}>
+            <Grid key={asset.id} size={12}>
               <Card 
                 sx={{ 
                   cursor: 'pointer',
                   border: editorState.selectedAssetIds.includes(asset.id) ? '2px solid #1976d2' : 'none',
+                  position: 'relative',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
+                  },
                 }}
                 onClick={() => handleAssetSelect(asset.id)}
+                onMouseEnter={() => setHoveredAssetId(asset.id)}
+                onMouseLeave={() => setHoveredAssetId(null)}
               >
+                {hoveredAssetId === asset.id && (
+                  <IconButton
+                    sx={{
+                      position: 'absolute',
+                      top: '50%',
+                      right: 40,
+                      transform: 'translateY(-50%)',
+                      backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                      color: 'white',
+                      '&:hover': {
+                        backgroundColor: 'rgba(25, 118, 210, 0.8)',
+                      },
+                      zIndex: 10,
+                    }}
+                    onClick={(e) => handleAddToTrack(e, asset)}
+                  >
+                    <ArrowDownToLine size={24} />
+                  </IconButton>
+                )}
                 <CardContent sx={{ p: 1, display: 'flex', alignItems: 'center' }}>
                   <Music size={24} style={{ marginRight: 8 }} />
                   <Box sx={{ flexGrow: 1 }}>
@@ -308,14 +415,41 @@ const AssetLibrary = () => {
 
         <Grid container spacing={2}>
           {textAssets.map((asset) => (
-            <Grid item xs={12} key={asset.id}>
+            <Grid key={asset.id} size={12}>
               <Card 
                 sx={{ 
                   cursor: 'pointer',
                   border: editorState.selectedAssetIds.includes(asset.id) ? '2px solid #1976d2' : 'none',
+                  position: 'relative',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
+                  },
                 }}
                 onClick={() => handleAssetSelect(asset.id)}
+                onMouseEnter={() => setHoveredAssetId(asset.id)}
+                onMouseLeave={() => setHoveredAssetId(null)}
               >
+                {hoveredAssetId === asset.id && (
+                  <IconButton
+                    sx={{
+                      position: 'absolute',
+                      top: '50%',
+                      right: 40,
+                      transform: 'translateY(-50%)',
+                      backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                      color: 'white',
+                      '&:hover': {
+                        backgroundColor: 'rgba(25, 118, 210, 0.8)',
+                      },
+                      zIndex: 10,
+                    }}
+                    onClick={(e) => handleAddToTrack(e, asset)}
+                  >
+                    <ArrowDownToLine size={24} />
+                  </IconButton>
+                )}
                 <CardContent sx={{ p: 1, display: 'flex', alignItems: 'center' }}>
                   <Type size={24} style={{ marginRight: 8 }} />
                   <Box sx={{ flexGrow: 1 }}>

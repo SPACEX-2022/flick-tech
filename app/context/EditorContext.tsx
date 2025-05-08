@@ -64,6 +64,7 @@ interface EditorContextType {
   // 播放控制
   setCurrentTime: (time: number) => void;
   togglePlayback: () => void;
+  setPlaybackState: (state: EditorState['playbackState']) => void;
   // 其他操作
   setZoom: (zoom: number) => void;
 }
@@ -226,6 +227,13 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
     }));
   };
 
+  const setPlaybackState = (state: EditorState['playbackState']) => {
+    setEditorState((prev) => ({
+      ...prev,
+      playbackState: state,
+    }));
+  };
+
   // 缩放控制
   const setZoom = (zoom: number) => {
     setEditorState((prev) => ({
@@ -248,6 +256,7 @@ export const EditorProvider = ({ children }: { children: ReactNode }) => {
         updateClip,
         setCurrentTime,
         togglePlayback,
+        setPlaybackState,
         setZoom,
       }}
     >
