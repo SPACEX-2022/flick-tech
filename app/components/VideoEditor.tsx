@@ -15,31 +15,42 @@ const techTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: '#48d1cc', // 青色
+      main: '#00FFEF', // 更亮的青色
     },
     secondary: {
-      main: '#7b68ee', // 蓝紫色
+      main: '#9D7FFF', // 更亮的蓝紫色
     },
     background: {
-      default: '#121212',
-      paper: '#1e1e1e',
+      default: '#0a0a0a',
+      paper: '#151515',
+    },
+    text: {
+      primary: '#ffffff',
+      secondary: '#e0e0e0',
     },
   },
   typography: {
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
+    allVariants: {
+      color: '#ffffff',
+    },
+    button: {
+      fontWeight: 600,
+    },
   },
   components: {
     MuiButton: {
       styleOverrides: {
         root: {
           borderRadius: 4,
+          fontWeight: 600,
         },
       },
     },
     MuiPaper: {
       styleOverrides: {
         root: {
-          backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0))',
+          backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0))',
           borderRadius: 8,
         },
       },
@@ -47,7 +58,7 @@ const techTheme = createTheme({
     MuiCard: {
       styleOverrides: {
         root: {
-          backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0))',
+          backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0))',
           borderRadius: 8,
         },
       },
@@ -58,18 +69,19 @@ const techTheme = createTheme({
 // 全局样式
 const globalStyles = `
   :root {
-    --panel-border-color: rgba(72, 209, 204, 0.3);
-    --panel-bg-color: rgba(30, 30, 30, 0.7);
-    --grid-line-color: rgba(72, 209, 204, 0.1);
+    --panel-border-color: rgba(0, 255, 239, 0.4);
+    --panel-bg-color: rgba(21, 21, 21, 0.95);
+    --grid-line-color: rgba(0, 255, 239, 0.15);
   }
   
   body {
-    background-color: #121212;
+    background-color: #0a0a0a;
     background-image: 
-      radial-gradient(at 30% 20%, rgba(72, 209, 204, 0.05) 0px, transparent 50%),
-      radial-gradient(at 80% 70%, rgba(123, 104, 238, 0.05) 0px, transparent 50%);
+      radial-gradient(at 30% 20%, rgba(0, 255, 239, 0.07) 0px, transparent 50%),
+      radial-gradient(at 80% 70%, rgba(157, 127, 255, 0.07) 0px, transparent 50%);
     background-size: 100% 100%;
     background-attachment: fixed;
+    color: #ffffff;
   }
   
   .grid-bg {
@@ -83,11 +95,11 @@ const globalStyles = `
     border: 1px solid var(--panel-border-color);
     background-color: var(--panel-bg-color);
     backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   }
   
   .glow-border {
-    box-shadow: 0 0 15px rgba(72, 209, 204, 0.2);
+    box-shadow: 0 0 15px rgba(0, 255, 239, 0.25);
   }
   
   .main-layout {
