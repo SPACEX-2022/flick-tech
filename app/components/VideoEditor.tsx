@@ -6,7 +6,7 @@ import AssetLibrary from './AssetLibrary';
 import Timeline from './Timeline';
 import VideoPreview from './VideoPreview';
 import PropertiesPanel from './PropertiesPanel';
-import { EditorProvider, useEditor } from '../context/EditorContext';
+import { useEditor } from '../context/EditorContext';
 import ResizablePanel from './ResizablePanel';
 import { Asset } from '../types/editor';
 
@@ -144,56 +144,62 @@ const VideoEditor = ({ initialAssets = [] }: VideoEditorProps) => {
     };
   }, []);
 
-  // 加载初始资产
+  // 加载初始资产 - 添加依赖项并确保只运行一次
   useEffect(() => {
-    initialAssets.forEach(asset => {
-      addAsset(asset);
-    });
-  }, [addAsset, initialAssets]);
+    if (initialAssets.length > 0) {
+      const assetsToAdd = [...initialAssets];
+      // 使用延时函数避免无限循环
+      const timer = setTimeout(() => {
+        assetsToAdd.forEach(asset => {
+          addAsset(asset);
+        });
+      }, 0);
+      
+      return () => clearTimeout(timer);
+    }
+  }, []); // 空依赖数组，确保只运行一次
 
   return (
     <ThemeProvider theme={techTheme}>
-      <EditorProvider>
-        <div className="main-layout grid-bg">
-          <div className="top-panels">
-            <ResizablePanel
-              defaultWidth={250}
-              resizeHandles={['e']}
-              style={{ marginRight: 16 }}
-            >
-              <Box className="tech-panel glow-border" sx={{ height: '100%', overflow: 'hidden', borderRadius: 2 }}>
-                <AssetLibrary />
-              </Box>
-            </ResizablePanel>
-            
-            <Box sx={{ flexGrow: 1, marginRight: 16 }}>
-              <Box className="tech-panel glow-border" sx={{ height: '100%', overflow: 'hidden', borderRadius: 2 }}>
-                <VideoPreview />
-              </Box>
-            </Box>
-            
-            <ResizablePanel
-              defaultWidth={300}
-              resizeHandles={['w']}
-            >
-              <Box className="tech-panel glow-border" sx={{ height: '100%', overflow: 'hidden', borderRadius: 2 }}>
-                <PropertiesPanel />
-              </Box>
-            </ResizablePanel>
-          </div>
-          
+      <div className="main-layout grid-bg">
+        <div className="top-panels">
           <ResizablePanel
-            defaultWidth={windowWidth}
-            defaultHeight={200}
-            resizeHandles={['n']}
-            className="bottom-panel"
+            defaultWidth={250}
+            resizeHandles={['e']}
+            style={{ marginRight: 16 }}
           >
             <Box className="tech-panel glow-border" sx={{ height: '100%', overflow: 'hidden', borderRadius: 2 }}>
-              <Timeline />
+              <AssetLibrary />
+            </Box>
+          </ResizablePanel>
+          
+          <Box sx={{ flexGrow: 1, marginRight: 16 }}>
+            <Box className="tech-panel glow-border" sx={{ height: '100%', overflow: 'hidden', borderRadius: 2 }}>
+              <VideoPreview />
+            </Box>
+          </Box>
+          
+          <ResizablePanel
+            defaultWidth={300}
+            resizeHandles={['w']}
+          >
+            <Box className="tech-panel glow-border" sx={{ height: '100%', overflow: 'hidden', borderRadius: 2 }}>
+              <PropertiesPanel />
             </Box>
           </ResizablePanel>
         </div>
-      </EditorProvider>
+        
+        <ResizablePanel
+          defaultWidth={windowWidth}
+          defaultHeight={200}
+          resizeHandles={['n']}
+          className="bottom-panel"
+        >
+          <Box className="tech-panel glow-border" sx={{ height: '100%', overflow: 'hidden', borderRadius: 2 }}>
+            <Timeline />
+          </Box>
+        </ResizablePanel>
+      </div>
     </ThemeProvider>
   );
 };
