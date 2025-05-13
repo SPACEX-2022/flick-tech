@@ -10,32 +10,29 @@ import { useEditor } from '../context/EditorContext';
 import ResizablePanel from './ResizablePanel';
 import { Asset } from '../types/editor';
 
-// 创建科技感主题
-const techTheme = createTheme({
+// 创建类似Clipchamp主题
+const clipchampTheme = createTheme({
   palette: {
-    mode: 'dark',
+    mode: 'light',
     primary: {
-      main: '#00FFEF', // 更亮的青色
+      main: '#6C5CE7', // 紫色主色调
     },
     secondary: {
-      main: '#9D7FFF', // 更亮的蓝紫色
+      main: '#A29BFE', // 淡紫色
     },
     background: {
-      default: '#0a0a0a',
-      paper: '#151515',
+      default: '#FFFFFF',
+      paper: '#F8F9FA',
     },
     text: {
-      primary: '#ffffff',
-      secondary: '#e0e0e0',
+      primary: '#333333',
+      secondary: '#666666',
     },
   },
   typography: {
     fontFamily: '"Roboto", "Helvetica", "Arial", sans-serif',
-    allVariants: {
-      color: '#ffffff',
-    },
     button: {
-      fontWeight: 600,
+      fontWeight: 500,
     },
   },
   components: {
@@ -43,23 +40,21 @@ const techTheme = createTheme({
       styleOverrides: {
         root: {
           borderRadius: 4,
-          fontWeight: 600,
+          textTransform: 'none',
+        },
+        containedPrimary: {
+          backgroundColor: '#6C5CE7',
+          '&:hover': {
+            backgroundColor: '#5649C1',
+          },
         },
       },
     },
     MuiPaper: {
       styleOverrides: {
         root: {
-          backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0))',
-          borderRadius: 8,
-        },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0))',
-          borderRadius: 8,
+          borderRadius: 4,
+          boxShadow: 'none',
         },
       },
     },
@@ -69,58 +64,80 @@ const techTheme = createTheme({
 // 全局样式
 const globalStyles = `
   :root {
-    --panel-border-color: rgba(0, 255, 239, 0.4);
-    --panel-bg-color: rgba(21, 21, 21, 0.95);
-    --grid-line-color: rgba(0, 255, 239, 0.15);
+    --header-height: 48px;
+    --sidebar-width: 240px;
+    --timeline-height: 180px;
+    --border-color: #E0E0E0;
+    --background-color: #F8F9FA;
   }
   
   body {
-    background-color: #0a0a0a;
-    background-image: 
-      radial-gradient(at 30% 20%, rgba(0, 255, 239, 0.07) 0px, transparent 50%),
-      radial-gradient(at 80% 70%, rgba(157, 127, 255, 0.07) 0px, transparent 50%);
-    background-size: 100% 100%;
-    background-attachment: fixed;
-    color: #ffffff;
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    background-color: #F8F9FA;
+    color: #333333;
   }
   
-  .grid-bg {
-    background-image:
-      linear-gradient(to right, var(--grid-line-color) 1px, transparent 1px),
-      linear-gradient(to bottom, var(--grid-line-color) 1px, transparent 1px);
-    background-size: 20px 20px;
+  .clipchamp-header {
+    height: var(--header-height);
+    border-bottom: 1px solid var(--border-color);
+    background-color: white;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  .clipchamp-logo {
+    display: flex;
+    align-items: center;
+    font-weight: 500;
+    font-size: 16px;
+    color: #333;
   }
   
-  .tech-panel {
-    border: 1px solid var(--panel-border-color);
-    background-color: var(--panel-bg-color);
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  .clipchamp-sidebar {
+    width: 100%;
+    background-color: white;
+    border-right: 1px solid var(--border-color);
+    height: 100%;
   }
   
-  .glow-border {
-    box-shadow: 0 0 15px rgba(0, 255, 239, 0.25);
+  .clipchamp-sidebar-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 16px;
+    color: #333;
+    text-decoration: none;
+    font-size: 14px;
   }
   
-  .main-layout {
-    padding: 16px;
-    width: 100vw;
-    height: 100vh;
-    box-sizing: border-box;
+  .clipchamp-sidebar-item svg {
+    margin-right: 12px;
+  }
+  
+  .clipchamp-preview {
+    flex: 1;
     display: flex;
     flex-direction: column;
+    background-color: #222;
+  }
+
+  .clipchamp-timeline {
+    height: var(--timeline-height);
+    border-top: 1px solid var(--border-color);
+    background-color: white;
   }
   
-  .top-panels {
-    display: flex;
-    flex: 1;
-    margin-bottom: 16px;
-    min-height: 0;
-  }
-  
-  .bottom-panel {
-    height: 200px;
-    width: 100%;
+  .export-button {
+    background-color: #6C5CE7;
+    color: white;
+    border-radius: 4px;
+    padding: 8px 16px;
+    margin-left: auto;
+    border: none;
+    font-weight: 500;
   }
 `;
 
@@ -141,11 +158,11 @@ const VideoEditor = ({ initialAssets = [] }: VideoEditorProps) => {
     document.head.appendChild(styleEl);
 
     // 计算窗口宽度
-    setWindowWidth(window.innerWidth - 32);
+    setWindowWidth(window.innerWidth);
 
     // 监听窗口大小变化
     const handleResize = () => {
-      setWindowWidth(window.innerWidth - 32);
+      setWindowWidth(window.innerWidth);
     };
     
     window.addEventListener('resize', handleResize);
@@ -156,7 +173,7 @@ const VideoEditor = ({ initialAssets = [] }: VideoEditorProps) => {
     };
   }, []);
 
-  // 加载初始资产 - 添加依赖项并确保只运行一次
+  // 加载初始资产
   useEffect(() => {
     if (initialAssets.length > 0) {
       const assetsToAdd = [...initialAssets];
@@ -169,49 +186,70 @@ const VideoEditor = ({ initialAssets = [] }: VideoEditorProps) => {
       
       return () => clearTimeout(timer);
     }
-  }, []); // 空依赖数组，确保只运行一次
+  }, []);
 
   return (
-    <ThemeProvider theme={techTheme}>
-      <div className="main-layout grid-bg">
-        <div className="top-panels">
+    <ThemeProvider theme={clipchampTheme}>
+      <Box sx={{ 
+        width: '100vw', 
+        height: '100vh', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        overflow: 'hidden'
+      }}>
+        {/* 头部导航栏 */}
+        <div className="clipchamp-header">
+          <div className="clipchamp-logo">
+            <span>无标题视频</span>
+          </div>
+          <button className="export-button">导出</button>
+        </div>
+
+        {/* 主体内容区 */}
+        <Box sx={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+          {/* 左侧侧边栏 */}
           <ResizablePanel
-            defaultWidth={250}
+            defaultWidth={240}
             resizeHandles={['e']}
-            style={{ marginRight: 16 }}
+            style={{ height: '100%' }}
           >
-            <Box className="tech-panel glow-border" sx={{ height: '100%', overflow: 'hidden', borderRadius: 2 }}>
+            <div className="clipchamp-sidebar">
               <AssetLibrary />
-            </Box>
+            </div>
           </ResizablePanel>
-          
-          <Box sx={{ flexGrow: 1, marginRight: 16 }}>
-            <Box className="tech-panel glow-border" sx={{ height: '100%', overflow: 'hidden', borderRadius: 2 }}>
+
+          {/* 视频预览区和时间线区 */}
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+            {/* 视频预览区 */}
+            <Box sx={{ flex: 1, overflow: 'hidden', backgroundColor: '#222' }}>
               <VideoPreview />
             </Box>
+            
+            {/* 时间线区 */}
+            <ResizablePanel
+              defaultWidth={windowWidth}
+              defaultHeight={180}
+              resizeHandles={['n']}
+              style={{ width: '100%' }}
+            >
+              <div className="clipchamp-timeline">
+                <Timeline />
+              </div>
+            </ResizablePanel>
           </Box>
-          
+
+          {/* 右侧属性面板 */}
           <ResizablePanel
             defaultWidth={300}
             resizeHandles={['w']}
+            style={{ height: '100%' }}
           >
-            <Box className="tech-panel glow-border" sx={{ height: '100%', overflow: 'hidden', borderRadius: 2 }}>
+            <Box sx={{ height: '100%', borderLeft: '1px solid var(--border-color)', backgroundColor: 'white' }}>
               <PropertiesPanel />
             </Box>
           </ResizablePanel>
-        </div>
-        
-        <ResizablePanel
-          defaultWidth={windowWidth}
-          defaultHeight={200}
-          resizeHandles={['n']}
-          className="bottom-panel"
-        >
-          <Box className="tech-panel glow-border" sx={{ height: '100%', overflow: 'hidden', borderRadius: 2 }}>
-            <Timeline />
-          </Box>
-        </ResizablePanel>
-      </div>
+        </Box>
+      </Box>
     </ThemeProvider>
   );
 };

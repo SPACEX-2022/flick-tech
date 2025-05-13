@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Button, Tabs, Tab, Box, Typography, IconButton, Grid, Card, CardMedia, CardContent, CardActions } from '@mui/material';
-import { PlusCircle, Trash2, Film, Image, Music, Type, ArrowDownToLine } from 'lucide-react';
+import { PlusCircle, Trash2, Film, Image, Music, Type, ArrowDownToLine, Upload } from 'lucide-react';
 import { useEditor } from '../context/EditorContext';
 import { Asset, AssetType } from '../types/editor';
 
@@ -16,16 +16,6 @@ const AssetLibrary = () => {
   const imageAssets = editorState.project.assets.filter(asset => asset.type === 'image');
   const audioAssets = editorState.project.assets.filter(asset => asset.type === 'audio');
   const textAssets = editorState.project.assets.filter(asset => asset.type === 'text');
-
-  // 获取文件类型的图标
-  const getAssetIcon = (type: AssetType) => {
-    switch (type) {
-      case 'video': return <Film size={18} />;
-      case 'image': return <Image size={18} />;
-      case 'audio': return <Music size={18} />;
-      case 'text': return <Type size={18} />;
-    }
-  };
 
   // 处理文件上传
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>, type: AssetType) => {
@@ -108,18 +98,7 @@ const AssetLibrary = () => {
     });
   };
 
-  // 处理选中素材
-  const handleAssetSelect = (assetId: string) => {
-    selectAsset(assetId);
-  };
-
-  // 处理删除素材
-  const handleAssetDelete = (e: React.MouseEvent, assetId: string) => {
-    e.stopPropagation();
-    removeAsset(assetId);
-  };
-
-  // 添加到轨道
+  // 处理添加到轨道
   const handleAddToTrack = (e: React.MouseEvent, asset: Asset) => {
     e.stopPropagation();
     
@@ -143,329 +122,211 @@ const AssetLibrary = () => {
       outPoint: clipDuration,
     });
   };
-
-  return (
-    <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={tabValue} onChange={(_, newValue) => setTabValue(newValue)}>
-          <Tab label="视频" icon={<Film size={16} />} iconPosition="start" />
-          <Tab label="图片" icon={<Image size={16} />} iconPosition="start" />
-          <Tab label="音频" icon={<Music size={16} />} iconPosition="start" />
-          <Tab label="文字" icon={<Type size={16} />} iconPosition="start" />
-        </Tabs>
-      </Box>
-
-      {/* 视频素材面板 */}
-      <Box hidden={tabValue !== 0} sx={{ p: 2, flexGrow: 1, overflow: 'auto' }}>
-        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between' }}>
-          <Typography variant="subtitle1">视频素材</Typography>
-          <Button
-            component="label"
-            startIcon={<PlusCircle size={16} />}
-            size="small"
-          >
-            添加视频
-            <input
-              type="file"
-              hidden
-              accept="video/*"
-              multiple
-              onChange={(e) => handleFileUpload(e, 'video')}
-            />
-          </Button>
+  
+  const renderAssets = (assets: Asset[], type: AssetType) => {
+    if (assets.length === 0) {
+      return (
+        <Box sx={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center',
+          justifyContent: 'center', 
+          height: 200,
+          color: 'text.secondary'
+        }}>
+          <Upload size={32} strokeWidth={1.5} />
+          <Typography variant="body2" sx={{ mt: 1 }}>
+            {type === 'video' && '将视频拖到此处'}
+            {type === 'image' && '将图片拖到此处'}
+            {type === 'audio' && '将音频拖到此处'}
+            {type === 'text' && '点击添加文本'}
+          </Typography>
         </Box>
-
-        <Grid container spacing={2}>
-          {videoAssets.map((asset) => (
-            <Grid key={asset.id} size={6}>
-              <Card 
-                sx={{ 
-                  cursor: 'pointer',
-                  border: editorState.selectedAssetIds.includes(asset.id) ? '2px solid #1976d2' : 'none',
-                  position: 'relative',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
-                  },
-                }}
-                onClick={() => handleAssetSelect(asset.id)}
-                onMouseEnter={() => setHoveredAssetId(asset.id)}
-                onMouseLeave={() => setHoveredAssetId(null)}
-              >
-                {hoveredAssetId === asset.id && (
-                  <IconButton
-                    sx={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                      color: 'white',
-                      '&:hover': {
-                        backgroundColor: 'rgba(25, 118, 210, 0.8)',
-                      },
-                      zIndex: 10,
-                    }}
-                    onClick={(e) => handleAddToTrack(e, asset)}
-                  >
-                    <ArrowDownToLine size={24} />
-                  </IconButton>
-                )}
+      );
+    }
+    
+    return (
+      <Box sx={{ mt: 1, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+        {assets.map((asset) => (
+          <Box 
+            key={asset.id} 
+            sx={{ width: 'calc(50% - 4px)', flexShrink: 0 }}
+          >
+            <Card 
+              sx={{ 
+                cursor: 'pointer',
+                border: editorState.selectedAssetIds.includes(asset.id) ? '2px solid #6C5CE7' : 'none',
+                position: 'relative',
+                borderRadius: 1,
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                '&:hover': {
+                  boxShadow: '0 2px 5px rgba(0,0,0,0.15)',
+                },
+              }}
+              onClick={() => selectAsset(asset.id)}
+              onMouseEnter={() => setHoveredAssetId(asset.id)}
+              onMouseLeave={() => setHoveredAssetId(null)}
+            >
+              {hoveredAssetId === asset.id && (
+                <Button
+                  variant="contained"
+                  size="small"
+                  sx={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '50%',
+                    transform: 'translate(-50%, -50%)',
+                    minWidth: 'auto',
+                    zIndex: 10,
+                    backgroundColor: 'rgba(108, 92, 231, 0.8)',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: 'rgba(108, 92, 231, 1)',
+                    },
+                  }}
+                  onClick={(e) => handleAddToTrack(e, asset)}
+                >
+                  <ArrowDownToLine size={18} />
+                </Button>
+              )}
+              {asset.type === 'video' && (
+                <Box sx={{ position: 'absolute', top: 5, right: 5, 
+                  backgroundColor: 'rgba(0,0,0,0.6)', 
+                  color: 'white',
+                  borderRadius: '2px',
+                  padding: '2px 4px',
+                  fontSize: '0.7rem'
+                }}>
+                  {asset.duration && `${Math.floor(asset.duration / 60000)}:${Math.floor((asset.duration % 60000) / 1000).toString().padStart(2, '0')}`}
+                </Box>
+              )}
+              {(asset.type === 'video' || asset.type === 'image') && (
                 <CardMedia
                   component="img"
-                  height="100"
+                  height="80"
                   image={asset.thumbnail || '/placeholder-video.jpg'}
                   alt={asset.name}
                 />
-                <CardContent sx={{ p: 1 }}>
-                  <Typography variant="body2" noWrap>{asset.name}</Typography>
-                  {asset.duration && (
-                    <Typography variant="caption" color="text.secondary">
-                      {Math.floor(asset.duration / 60000)}:{Math.floor((asset.duration % 60000) / 1000).toString().padStart(2, '0')}
-                    </Typography>
-                  )}
-                </CardContent>
-                <CardActions sx={{ p: 0.5, justifyContent: 'flex-end' }}>
-                  <IconButton 
-                    size="small" 
-                    onClick={(e) => handleAssetDelete(e, asset.id)}
-                  >
-                    <Trash2 size={16} />
-                  </IconButton>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+              )}
+              {asset.type === 'audio' && (
+                <Box sx={{ height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f5f5f5' }}>
+                  <Music size={24} />
+                </Box>
+              )}
+              {asset.type === 'text' && (
+                <Box sx={{ height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f5f5f5' }}>
+                  <Type size={24} />
+                </Box>
+              )}
+              <CardContent sx={{ p: 1, pb: '4px !important' }}>
+                <Typography variant="caption" noWrap sx={{ display: 'block' }}>
+                  {asset.name}
+                </Typography>
+              </CardContent>
+              <CardActions sx={{ p: '0 4px 4px 0', justifyContent: 'flex-end' }}>
+                <IconButton 
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    removeAsset(asset.id);
+                  }}
+                  sx={{ padding: 0.5 }}
+                >
+                  <Trash2 size={14} />
+                </IconButton>
+              </CardActions>
+            </Card>
+          </Box>
+        ))}
       </Box>
+    );
+  };
 
-      {/* 图片素材面板 */}
-      <Box hidden={tabValue !== 1} sx={{ p: 2, flexGrow: 1, overflow: 'auto' }}>
-        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between' }}>
-          <Typography variant="subtitle1">图片素材</Typography>
-          <Button
-            component="label"
-            startIcon={<PlusCircle size={16} />}
-            size="small"
-          >
-            添加图片
-            <input
-              type="file"
-              hidden
-              accept="image/*"
-              multiple
-              onChange={(e) => handleFileUpload(e, 'image')}
-            />
-          </Button>
+  return (
+    <Box sx={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: '#f8f9fa' }}>
+        <Typography variant="subtitle1" sx={{ p: '12px 16px', fontWeight: 500 }}>您的媒体</Typography>
+      </Box>
+      <Button
+        variant="outlined"
+        startIcon={<PlusCircle size={16} />}
+        sx={{ m: 1, color: '#6C5CE7', borderColor: '#6C5CE7', '&:hover': { borderColor: '#5649C1' } }}
+        component="label"
+      >
+        导入媒体
+        <input
+          type="file"
+          hidden
+          accept="video/*,image/*,audio/*"
+          multiple
+          onChange={(e) => {
+            const files = e.target.files;
+            if (files) {
+              for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const type: AssetType = 
+                  file.type.startsWith('video/') ? 'video' :
+                  file.type.startsWith('image/') ? 'image' :
+                  file.type.startsWith('audio/') ? 'audio' : 'text';
+                
+                handleFileUpload({ target: { files: [file], value: '' } } as any, type);
+              }
+            }
+          }}
+        />
+      </Button>
+      <Tabs 
+        value={tabValue} 
+        onChange={(_, newValue) => setTabValue(newValue)}
+        variant="fullWidth"
+        sx={{
+          '& .MuiTab-root': { 
+            minHeight: '40px',
+            textTransform: 'none',
+            fontSize: '0.85rem',
+            padding: '8px 16px'
+          }
+        }}
+      >
+        <Tab label="视频" icon={<Film size={16} />} iconPosition="start" />
+        <Tab label="图片" icon={<Image size={16} />} iconPosition="start" />
+        <Tab label="音频" icon={<Music size={16} />} iconPosition="start" />
+        <Tab label="文字" icon={<Type size={16} />} iconPosition="start" />
+      </Tabs>
+
+      <Box sx={{ p: 1.5, flexGrow: 1, overflow: 'auto' }}>
+        {/* 视频素材面板 */}
+        <Box hidden={tabValue !== 0} sx={{ height: '100%' }}>
+          {renderAssets(videoAssets, 'video')}
         </Box>
 
-        <Grid container spacing={2}>
-          {imageAssets.map((asset) => (
-            <Grid key={asset.id} size={6}>
-              <Card 
-                sx={{ 
-                  cursor: 'pointer',
-                  border: editorState.selectedAssetIds.includes(asset.id) ? '2px solid #1976d2' : 'none',
-                  position: 'relative',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
-                  },
-                }}
-                onClick={() => handleAssetSelect(asset.id)}
-                onMouseEnter={() => setHoveredAssetId(asset.id)}
-                onMouseLeave={() => setHoveredAssetId(null)}
-              >
-                {hoveredAssetId === asset.id && (
-                  <IconButton
-                    sx={{
-                      position: 'absolute',
-                      top: '50%',
-                      left: '50%',
-                      transform: 'translate(-50%, -50%)',
-                      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                      color: 'white',
-                      '&:hover': {
-                        backgroundColor: 'rgba(25, 118, 210, 0.8)',
-                      },
-                      zIndex: 10,
-                    }}
-                    onClick={(e) => handleAddToTrack(e, asset)}
-                  >
-                    <ArrowDownToLine size={24} />
-                  </IconButton>
-                )}
-                <CardMedia
-                  component="img"
-                  height="100"
-                  image={asset.src}
-                  alt={asset.name}
-                />
-                <CardContent sx={{ p: 1 }}>
-                  <Typography variant="body2" noWrap>{asset.name}</Typography>
-                </CardContent>
-                <CardActions sx={{ p: 0.5, justifyContent: 'flex-end' }}>
-                  <IconButton 
-                    size="small" 
-                    onClick={(e) => handleAssetDelete(e, asset.id)}
-                  >
-                    <Trash2 size={16} />
-                  </IconButton>
-                </CardActions>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-
-      {/* 音频素材面板 */}
-      <Box hidden={tabValue !== 2} sx={{ p: 2, flexGrow: 1, overflow: 'auto' }}>
-        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between' }}>
-          <Typography variant="subtitle1">音频素材</Typography>
-          <Button
-            component="label"
-            startIcon={<PlusCircle size={16} />}
-            size="small"
-          >
-            添加音频
-            <input
-              type="file"
-              hidden
-              accept="audio/*"
-              multiple
-              onChange={(e) => handleFileUpload(e, 'audio')}
-            />
-          </Button>
+        {/* 图片素材面板 */}
+        <Box hidden={tabValue !== 1} sx={{ height: '100%' }}>
+          {renderAssets(imageAssets, 'image')}
         </Box>
 
-        <Grid container spacing={2}>
-          {audioAssets.map((asset) => (
-            <Grid key={asset.id} size={12}>
-              <Card 
-                sx={{ 
-                  cursor: 'pointer',
-                  border: editorState.selectedAssetIds.includes(asset.id) ? '2px solid #1976d2' : 'none',
-                  position: 'relative',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
-                  },
-                }}
-                onClick={() => handleAssetSelect(asset.id)}
-                onMouseEnter={() => setHoveredAssetId(asset.id)}
-                onMouseLeave={() => setHoveredAssetId(null)}
-              >
-                {hoveredAssetId === asset.id && (
-                  <IconButton
-                    sx={{
-                      position: 'absolute',
-                      top: '50%',
-                      right: 40,
-                      transform: 'translateY(-50%)',
-                      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                      color: 'white',
-                      '&:hover': {
-                        backgroundColor: 'rgba(25, 118, 210, 0.8)',
-                      },
-                      zIndex: 10,
-                    }}
-                    onClick={(e) => handleAddToTrack(e, asset)}
-                  >
-                    <ArrowDownToLine size={24} />
-                  </IconButton>
-                )}
-                <CardContent sx={{ p: 1, display: 'flex', alignItems: 'center' }}>
-                  <Music size={24} style={{ marginRight: 8 }} />
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Typography variant="body2" noWrap>{asset.name}</Typography>
-                    {asset.duration && (
-                      <Typography variant="caption" color="text.secondary">
-                        {Math.floor(asset.duration / 60000)}:{Math.floor((asset.duration % 60000) / 1000).toString().padStart(2, '0')}
-                      </Typography>
-                    )}
-                  </Box>
-                  <IconButton 
-                    size="small" 
-                    onClick={(e) => handleAssetDelete(e, asset.id)}
-                  >
-                    <Trash2 size={16} />
-                  </IconButton>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-
-      {/* 文字素材面板 */}
-      <Box hidden={tabValue !== 3} sx={{ p: 2, flexGrow: 1, overflow: 'auto' }}>
-        <Box sx={{ mb: 2, display: 'flex', justifyContent: 'space-between' }}>
-          <Typography variant="subtitle1">文字素材</Typography>
-          <Button
-            startIcon={<PlusCircle size={16} />}
-            size="small"
-            onClick={createTextAsset}
-          >
-            添加文字
-          </Button>
+        {/* 音频素材面板 */}
+        <Box hidden={tabValue !== 2} sx={{ height: '100%' }}>
+          {renderAssets(audioAssets, 'audio')}
         </Box>
 
-        <Grid container spacing={2}>
-          {textAssets.map((asset) => (
-            <Grid key={asset.id} size={12}>
-              <Card 
-                sx={{ 
-                  cursor: 'pointer',
-                  border: editorState.selectedAssetIds.includes(asset.id) ? '2px solid #1976d2' : 'none',
-                  position: 'relative',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: '0 8px 16px rgba(0,0,0,0.2)',
-                  },
-                }}
-                onClick={() => handleAssetSelect(asset.id)}
-                onMouseEnter={() => setHoveredAssetId(asset.id)}
-                onMouseLeave={() => setHoveredAssetId(null)}
+        {/* 文字素材面板 */}
+        <Box hidden={tabValue !== 3} sx={{ height: '100%' }}>
+          {textAssets.length === 0 ? (
+            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 200 }}>
+              <Button 
+                variant="contained"
+                startIcon={<Type size={16} />}
+                onClick={createTextAsset}
+                sx={{ bgcolor: '#6C5CE7', '&:hover': { bgcolor: '#5649C1' } }}
               >
-                {hoveredAssetId === asset.id && (
-                  <IconButton
-                    sx={{
-                      position: 'absolute',
-                      top: '50%',
-                      right: 40,
-                      transform: 'translateY(-50%)',
-                      backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                      color: 'white',
-                      '&:hover': {
-                        backgroundColor: 'rgba(25, 118, 210, 0.8)',
-                      },
-                      zIndex: 10,
-                    }}
-                    onClick={(e) => handleAddToTrack(e, asset)}
-                  >
-                    <ArrowDownToLine size={24} />
-                  </IconButton>
-                )}
-                <CardContent sx={{ p: 1, display: 'flex', alignItems: 'center' }}>
-                  <Type size={24} style={{ marginRight: 8 }} />
-                  <Box sx={{ flexGrow: 1 }}>
-                    <Typography variant="body2" noWrap>{asset.name}</Typography>
-                  </Box>
-                  <IconButton 
-                    size="small" 
-                    onClick={(e) => handleAssetDelete(e, asset.id)}
-                  >
-                    <Trash2 size={16} />
-                  </IconButton>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+                添加文字
+              </Button>
+            </Box>
+          ) : (
+            renderAssets(textAssets, 'text')
+          )}
+        </Box>
       </Box>
     </Box>
   );
